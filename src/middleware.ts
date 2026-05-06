@@ -1,21 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = ['/login']
+export function middleware(request: NextRequest) {
+  const auth = request.cookies.get('fire_auth')?.value
+  const isLoginPage = request.nextUrl.pathname.startsWith('/login')
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api')
 
-export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl
-  const isPublic = PUBLIC_PATHS.some(p => pathname.startsWith(p))
-  const auth = req.cookies.get('fire_auth')?.value
+  if (isApiRoute) return NextResponse.next()
+  if (isLoginPage) return NextResponse.next()
 
-  if (!isPublic && auth !== 'Petvalu2026') {
-    const loginUrl = req.nextUrl.clone()
-    loginUrl.pathname = '/login'
-    return NextResponse.redirect(loginUrl)
+  if (auth !== 'Petvalu2026') {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
