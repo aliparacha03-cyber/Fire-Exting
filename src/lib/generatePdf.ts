@@ -2,7 +2,8 @@ import type { Inspection } from '@/types'
 import { CHECKS, GROUP_LABELS } from '@/types'
 
 export async function generateInspectionPdf(report: Inspection) {
-  const { jsPDF } = await import('jspdf')
+  const jsPDFModule = await import('jspdf')
+  const jsPDF = jsPDFModule.default || jsPDFModule.jsPDF
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
 
   const pageW = 210
@@ -51,7 +52,7 @@ export async function generateInspectionPdf(report: Inspection) {
     ['Device Type', report.device],
     ['Inspected By', report.inspector_name],
     ['Date', report.inspected_at],
-    ['Report ID', report.id.slice(0, 8) + '…'],
+    ['Report ID', report.id.slice(0, 8) + '...'],
   ]
 
   const colW = contentW / 2
@@ -69,7 +70,7 @@ export async function generateInspectionPdf(report: Inspection) {
     doc.setFontSize(9)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(30, 30, 30)
-    const val = field[1].length > 35 ? field[1].slice(0, 35) + '…' : field[1]
+    const val = field[1].length > 35 ? field[1].slice(0, 35) + '...' : field[1]
     doc.text(val, x + 4, fy + 9.5)
   })
 

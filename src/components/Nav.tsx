@@ -1,14 +1,13 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { logout } from '@/lib/auth'
 
 export default function Nav() {
   const path = usePathname()
   const router = useRouter()
 
   function handleLogout() {
-    logout()
+    document.cookie = 'fire_auth=; path=/; max-age=0'
     router.push('/login')
   }
 
