@@ -1,12 +1,15 @@
 import { supabase } from '@/lib/supabase'
 import Nav from '@/components/Nav'
 import QRGrid from './QRGrid'
+import AuthGuard from '@/components/AuthGuard'
+
 export const revalidate = 0
+
 export default async function QRSheetPage() {
   const { data: extinguishers, error } = await supabase.from('extinguishers').select('*').order('created_at')
   if (error) return <><Nav /><div style={{padding:40,color:'var(--red)'}}>Error: {error.message}</div></>
   return (
-    <>
+    <AuthGuard>
       <Nav />
       <main style={{maxWidth:1100,margin:'0 auto',padding:'36px 20px 60px'}}>
         <div style={{marginBottom:36}}>
@@ -16,6 +19,6 @@ export default async function QRSheetPage() {
         </div>
         <QRGrid extinguishers={extinguishers ?? []} />
       </main>
-    </>
+    </AuthGuard>
   )
 }
