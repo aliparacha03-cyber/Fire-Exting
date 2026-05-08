@@ -2,28 +2,57 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { Extinguisher } from '@/types'
-export default function QRGrid({ extinguishers }: { extinguishers: Extinguisher[] }) {
+
+export default function QRGrid() {
+  const [extinguishers, setExtinguishers] = useState<Extinguisher[]>([])
   const [qrUrls, setQrUrls] = useState<Record<string, string>>({})
-  const [origin, setOrigin] = useState('')
-  useEffect(() => { setOrigin(window.location.origin) }, [])
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
-    if (!origin) return
+    fetch('/api/extinguishers')
+      .then(r => r.json())
+      .then(data => {
+        setExtinguishers(data.extinguishers ?? [])
+        setLoading(false)
+      })
+  }, [])
+
+  useEffect(() => {
+    if (extinguishers.length === 0) return
     let cancelled = false
     async function generateAll() {
       const QRCode = (await import('qrcode')).default
       const urls: Record<string, string> = {}
       for (const ext of extinguishers) {
-        urls[ext.serial] = await QRCode.toDataURL(`${origin}/inspect/${ext.serial}`, {
-          width: 200, margin: 2, color: { dark: '#1a1a2e', light: '#ffffff' }, errorCorrectionLevel: 'M',
+        urls[ext.serial] = await QRCode.toDataURL(`${window.location.origin}/inspect/${ext.serial}`, {
+          width: 200, margin: 2,
+          color: { dark: '#1a1a2e', light: '#ffffff' },
+          errorCorrectionLevel: 'M',
         })
       }
       if (!cancelled) setQrUrls(urls)
     }
     generateAll()
     return () => { cancelled = true }
-  }, [origin, extinguishers])
+  }, [extinguishers])
+
+  if (loading) return (
+    <main style={{maxWidth:1100,margin:'0 auto',padding:'36px 20px 60px'}}>
+      <p style={{color:'var(--sub)',fontFamily:'DM Mono, monospace',fontSize:13}}>Loading extinguishers...</p>
+    </main>
+  )
+
   return (
-    <>
+    <main style={{maxWidth:1100,margin:'0 auto',padding:'36px 20px 60px'}}>
+      <div style={{marginBottom:36}}>
+        <p className="section-eyebrow">▸ Pet Valu — 10750 Highway 50, Brampton</p>
+        <h1 style={{fontSize:'clamp(22px,4vw,32px)',fontWeight:800,letterSpacing:'-0.5px',lineHeight:1.1}}>
+          Fire Extinguisher QR Sheet
+        </h1>
+        <p style={{color:'var(--sub)',fontFamily:'DM Mono, monospace',fontSize:13,marginTop:8}}>
+          {extinguishers.length} units · Print and post each card near its unit
+        </p>
+      </div>
       <div style={{marginBottom:28}}>
         <button className="btn btn-ghost" onClick={() => window.print()} style={{fontSize:13}}>🖨️ Print QR Sheet</button>
       </div>
@@ -43,6 +72,6 @@ export default function QRGrid({ extinguishers }: { extinguishers: Extinguisher[
           </Link>
         ))}
       </div>
-    </>
+    </main>
   )
 }
