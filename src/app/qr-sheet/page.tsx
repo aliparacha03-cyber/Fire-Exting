@@ -4,13 +4,13 @@ import QRGrid from './QRGrid'
 import AuthGuard from '@/components/AuthGuard'
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
 export default async function QRSheetPage() {
   const { data: extinguishers, error } = await supabase
     .from('extinguishers')
     .select('*')
     .order('created_at')
+    .range(0, 999)
 
   if (error) return <><Nav /><div style={{padding:40,color:'var(--red)'}}>Error: {error.message}</div></>
 
